@@ -43,23 +43,26 @@ var io = socket(server);
 //middleware
 io.use((socket, next) => {
     let token = socket.handshake.query.token;
-    if (token == "hi") {
+    if (controller.authenticate(token)) {
         return next();
     }
     return next(new Error('authentication error'));
 });
 
 
-io.on('connection', (socket) => {
+io.on('connection', async function (socket)  {
 
     console.log('made socket connection', socket.id);
+
+    // Add the new user to the list of online users
+    const username = await controller.getUsernameByToken(socket.handshake.query.token);
+    console.log(username);
+    onlineUsers.push(username);
 
     // send the list of online users to the new user
     io.sockets.connected[socket.id].emit("onlineUsers", onlineUsers);
 
-    // Add the new user to the list of online users
-    const username = getUsernameByToken(socket.handshake.query.token);
-    onlineUsers.push(username);
+    
 
     socket.broadcast.emit('userOnline', username);
 
@@ -76,9 +79,9 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('typing', data);
     });
 
-    socket.on('disconnect', function () {
+    socket.on('disconnect', async function () {
         console.log("hi");
-        const disconnectedUsername = controller.getUsernameByToken(socket.handshake.query.token);
+        const disconnectedUsername = await controller.getUsernameByToken(socket.handshake.query.token);
         socket.broadcast.emit('userOffline', disconnectedUsername);
         onlineUsers.splice(onlineUsers.indexOf(disconnectedUsername), 1);
     });

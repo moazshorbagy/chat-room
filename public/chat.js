@@ -57,10 +57,12 @@ socket.on('userOffline', function(data){
     * @param  JS
 */
 socket.on('onlineUsers', function(onlineUsersArr){
-    console.log("hi");
-    onlineUsersArr.forEach(element => {
-        onlineUsers.innerHTML += '<p class="w3-bar-item w3-button">'+ element + '</p>';
-   });
+    console.log(onlineUsersArr[0]);
+    for (let i = 0; i < onlineUsersArr.length; i++) {
+        
+        onlineUsers.innerHTML += '<p class="w3-bar-item w3-button">'+ onlineUsersArr[i] + '</p>';
+        
+    }
 });
 
 
@@ -71,8 +73,7 @@ socket.on('onlineUsers', function(onlineUsersArr){
     * @param  {cname} name of the cookie
 */
 function getCookie (cname) {
-    return "hi";
-    var name = "";
+    
     var decodedCookie = decodeURIComponent(document.cookie);
     var ca = decodedCookie.split(';');
     for(var i = 0; i <ca.length; i++) {
@@ -80,8 +81,9 @@ function getCookie (cname) {
       while (c.charAt(0) == ' ') {
         c = c.substring(1);
       }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
+      if (c.indexOf(cname) == 0) {
+          
+        return c.substring(cname.length+1, c.length);
       }
     }
     return "";

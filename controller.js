@@ -93,11 +93,32 @@ async function getUsernameByToken(token) {
     }
 }
 
+async function authenticate(token) {
+  if (!token)
+    return false;
+
+    try {
+
+      let payload = jwt.verify(token, "secret");
+      let id = payload.id;
+      let user = await User.findOne(id);
+
+      if(user)
+        return true;
+      else
+        return false;
+
+    } catch (error) {
+      return false;
+    }
+}
+
 function logout(req, res) {
 }
 
 module.exports = {
   signup,
   login,
-  getUsernameByToken
+  getUsernameByToken,
+  authenticate
 }
