@@ -54,7 +54,7 @@ async function login(req, res) {
 
     if (!valid) {
       return res.status(400).json({
-        error: "You have entered a wrong email and/or password."
+        error: "You have entered a wrong user name and/or password."
       });
     }
 
@@ -75,33 +75,21 @@ async function login(req, res) {
   };
 }
 
-function authenticate(req, res, next) {
-  
-  let token = req.headers["token"];
+async function getUsernameByToken(token) {
   if (!token)
-    return res.status(401).json({
-      error: "No token provided."
-    });
+    return -1;
 
-  jwt.verify(token, "secret", async function (err, payload) {
-    if (err) {
-      return res.status(401).json({
-        error: "Failed to authenticate token."
-      });
-    }
     try {
+
+      let payload = jwt.verify(token, "secret");
       let id = payload.id;
       let user = await User.findOne(id);
 
       return user.userName;
 
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        error: 'Internal server error'
-      });
-    };
-  });
+    } catch (error) {
+      return -1;
+    }
 }
 
 function logout(req, res) {
@@ -110,5 +98,5 @@ function logout(req, res) {
 module.exports = {
   signup,
   login,
-  authenticate
+  getUsernameByToken
 }
