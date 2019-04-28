@@ -1,6 +1,6 @@
 // Make connection
 var socket = io.connect('http://localhost:4000?token='+getCookie("token"));
-const username = getCookie("username");
+const username = getCookie("userName");
 
 // Query DOM
 var message = document.getElementById('message'),
