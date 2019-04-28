@@ -62,12 +62,11 @@ async function login(req, res) {
       "secret"
     );
 
-    return res.status(200).json({
-      token: token,
-      userId: user.id,
-      userName: user.userName
-    });
+    res.cookie('userName', user.userName);
+    res.cookie('token', token);
 
+    res.sendFile(__dirname + '/public/index.html');
+    
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -95,7 +94,7 @@ function authenticate(req, res, next) {
       let user = await User.findOne(id);
 
       return user.userName;
-      
+
     } catch (err) {
       console.log(err);
       return res.status(500).json({
