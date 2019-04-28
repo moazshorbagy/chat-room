@@ -2,13 +2,13 @@ var express = require('express');
 var cors = require('cors');
 var controller = require('./controller');
 var cookieParser = require('cookie-parser');
-var path = require('path');
 
 var app = express();
 
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 app.post('/login', controller.login);
 app.post('/register', controller.signup);
