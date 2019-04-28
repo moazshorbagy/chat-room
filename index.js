@@ -29,12 +29,14 @@ io.on('connection', (socket) => {
 
     console.log('made socket connection', socket.id);
     
-    // send the list of online users to the new user
-    io.sockets.connected[socket.id].emit("onlineUsers", onlineUsers);
-
     // Add the new user to the list of online users
     const username = getUsernameByToken(socket.handshake.query.token);
     onlineUsers.push(username);
+    
+    // send the list of online users to the new user
+    io.sockets.connected[socket.id].emit("onlineUsers", onlineUsers);
+
+    
 
     socket.broadcast.emit('userOnline', username);
 

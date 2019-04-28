@@ -1,5 +1,6 @@
 // Make connection
 var socket = io.connect('http://localhost:4000?token='+getCookie("token"));
+const username = getCookie("username");
 
 // Query DOM
 var message = document.getElementById('message'),
@@ -14,7 +15,7 @@ btn.addEventListener('click', function(){
     if(message.value != "") {
         socket.emit('chat', {
             message: message.value,
-            handle: handle.value
+            handle: username
         });
         message.value = "";
     }
@@ -24,7 +25,7 @@ message.addEventListener('keypress', function(e) {
     if(e.keyCode == 13) {
         btn.click();
     } else {
-        socket.emit('typing', handle.value);
+        socket.emit('typing', username);
     } 
 });
 
