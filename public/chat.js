@@ -1,5 +1,5 @@
 // Make connection
-var socket = io.connect('http://localhost:4000?token='+getCookie("token"));
+var socket = io.connect('http://41975893.ngrok.io?token='+getCookie("token"));
 const username = getCookie("userName");
 
 // Query DOM

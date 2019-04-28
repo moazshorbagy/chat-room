@@ -65,7 +65,8 @@ async function login(req, res) {
     res.cookie('userName', user.userName);
     res.cookie('token', token);
 
-    res.sendFile(__dirname + '/public/index.html');
+    //res.sendFile(__dirname + '/public/index.html');
+    res.status( 200).send();
     
   } catch (err) {
     console.log(err);
