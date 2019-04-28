@@ -10,7 +10,19 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static('public'));
 
+//to allow the server to have control over GET, POST, ...
+app.use(function (req, res, next) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Credentials", true);
+    next();
+});
+
+app.get('/home', (req, res) => { res.sendFile(__dirname + '/public/login.html') });
+app.get('/room', (req, res) => { res.sendFile(__dirname + '/public/index.html') });
 app.post('/login', controller.login);
 app.post('/register', controller.signup);
 
@@ -21,6 +33,10 @@ require('./db/config').then(_ => {
     console.error('Error in connecting to database\n', error);
 });
 
+var server = app.listen(3000, function () {
+    console.log('listening for requests on port 4000');
+});
+
 // Socket setup & pass server
 var io = socket(server);
 
@@ -28,16 +44,16 @@ var io = socket(server);
 io.use((socket, next) => {
     let token = socket.handshake.query.token;
     if (token == "hi") {
-      return next();
+        return next();
     }
     return next(new Error('authentication error'));
-  });
+});
 
 
 io.on('connection', (socket) => {
 
     console.log('made socket connection', socket.id);
-    
+
     // send the list of online users to the new user
     io.sockets.connected[socket.id].emit("onlineUsers", onlineUsers);
 
@@ -48,7 +64,7 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('userOnline', username);
 
     // Handle chat event
-    socket.on('chat', function(data){
+    socket.on('chat', function (data) {
         // console.log(data);
         console.log(socket.handshake.query.token);
         io.sockets.emit('chat', data);
@@ -56,20 +72,16 @@ io.on('connection', (socket) => {
     });
 
     // Handle typing event
-    socket.on('typing', function(data){
+    socket.on('typing', function (data) {
         socket.broadcast.emit('typing', data);
     });
 
-    socket.on('disconnect', function(){
+    socket.on('disconnect', function () {
         console.log("hi");
         const disconnectedUsername = controller.getUsernameByToken(socket.handshake.query.token);
         socket.broadcast.emit('userOffline', disconnectedUsername);
-        onlineUsers.splice(onlineUsers.indexOf(disconnectedUsername),1);
+        onlineUsers.splice(onlineUsers.indexOf(disconnectedUsername), 1);
     });
 });
 
 var onlineUsers = [];
-
-var server = app.listen(3000, function () {
-    console.log('listening for requests on port 4000');
-});
