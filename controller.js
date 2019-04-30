@@ -2,9 +2,14 @@ const User = require('./db/User');
 const jwt = require('jsonwebtoken');
 
 async function signup(req, res) {
+  console.log("signup started");
+
   let userName = req.body.userName;
   let password = req.body.password;
+  console.log(userName);
+  console.log(password);
   if (!userName || !password) {
+    console.log("register missing data");
     return res.status(400).json({
       error: "Missing data."
     });
@@ -12,6 +17,7 @@ async function signup(req, res) {
   try {
     let user = await User.findOne({ userName });
     if (user) {
+      console.log("register username exists");
       return res.status(405).json({
         error: "user name already exists."
       });
@@ -21,7 +27,7 @@ async function signup(req, res) {
     user.userName = userName;
     user.password = password;
     await user.save();
-
+    console.log("register success");
     return res.status(200).json();
   } catch (e) {
     console.log(e);
@@ -36,7 +42,11 @@ async function login(req, res) {
   let userName = req.body.userName;
   let password = req.body.password;
 
+  console.log(userName);
+  console.log(password);
+
   if (!userName || !password) {
+    console.log("login missong data");
     return res.status(400).json({
       error: "Missing data."
     });
@@ -45,7 +55,8 @@ async function login(req, res) {
   try {
     let user = await User.findOne({ userName });
     if (!user) {
-      return res.status(400).json({
+      console.log("login wrong username");
+      return res.status(400).json({     
         error: "You have entered a wrong user name."
       });
     }
@@ -53,6 +64,7 @@ async function login(req, res) {
     let valid = await user.checkPassword(password);
 
     if (!valid) {
+      console.log("login wrong password");
       return res.status(400).json({
         error: "You have entered a wrong user name and/or password."
       });
@@ -66,6 +78,7 @@ async function login(req, res) {
     res.cookie('token', token);
 
     //res.sendFile(__dirname + '/public/index.html');
+    console.log("login success");
     res.status( 200).send();
     
   } catch (err) {

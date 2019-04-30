@@ -1,5 +1,6 @@
+
 // Make connection
-var socket = io.connect('https://5c35caf4.ngrok.io/?token='+getCookie("token"));
+var socket = io.connect('http://localhost:1234/?token='+getCookie("token"));
 const username = getCookie("userName");
 
 // Query DOM
@@ -8,7 +9,11 @@ var message = document.getElementById('message'),
       btn = document.getElementById('send'),
       output = document.getElementById('output'),
       feedback = document.getElementById('feedback')
-      onlineUsers = document.getElementById('online-users');
+      onlineUsers = document.getElementById('online-users'),
+      windowChat = document.getElementById('chat-window');
+
+
+     
 
 // Emit events
 btn.addEventListener('click', function(){
@@ -33,20 +38,26 @@ message.addEventListener('keypress', function(e) {
 socket.on('chat', function(data){
     feedback.innerHTML = '';
     output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>';
+    // Slide to end
+    windowChat.scrollTop = windowChat.scrollHeight;
 });
 
 socket.on('typing', function(data){
     feedback.innerHTML = '<p><em>' + data + ' is typing a message...</em></p>';
+    // Slide to end
+    windowChat.scrollTop = windowChat.scrollHeight;
 });
 
 
 socket.on('userOnline', function(data){
-    onlineUsers.innerHTML += '<p class="w3-bar-item w3-button">'+ data + '</p>';
+    onlineUsers.innerHTML += '<p class="w3-bar-item w3-button" name="'+data+'">'+ data + '</p>';
 });
 
 socket.on('userOffline', function(data){
-    var parent = document.getElementById('online-users');
-    var child = getElementByInnerText(data);
+    console.log(data);
+    var parent = document.getElementById('online-users'); 
+    console.log(parent);
+    var child = document.getElementsByName(data)[0];
     parent.removeChild(child);
 });
 
@@ -60,7 +71,7 @@ socket.on('onlineUsers', function(onlineUsersArr){
     console.log(onlineUsersArr[0]);
     for (let i = 0; i < onlineUsersArr.length; i++) {
         
-        onlineUsers.innerHTML += '<p class="w3-bar-item w3-button">'+ onlineUsersArr[i] + '</p>';
+        onlineUsers.innerHTML += '<p class="w3-bar-item w3-button" name="'+onlineUsersArr[i]+'">'+ onlineUsersArr[i] + '</p>';
         
     }
 });
@@ -90,12 +101,3 @@ function getCookie (cname) {
   }
 
 
-/**
-    * Returns the DOM element specified by the inner text
-    *
-    * @param  {text} inner text of the element
-*/
-function getElementByInnerText(text){
-    var xpath = "//a[text()='"+text+"']";
-    return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-  }

@@ -33,7 +33,7 @@ require('./db/config').then(_ => {
     console.error('Error in connecting to database\n', error);
 });
 
-var server = app.listen(3000, function () {
+var server = app.listen(1234, function () {
     console.log('listening for requests on port 4000');
 });
 
@@ -41,9 +41,13 @@ var server = app.listen(3000, function () {
 var io = socket(server);
 
 //middleware
-io.use((socket, next) => {
+io.use(async(socket, next) => {
     let token = socket.handshake.query.token;
-    if (controller.authenticate(token)) {
+    const username = await controller.getUsernameByToken(token);
+    console.log(token);
+    console.log(username);
+    console.log(onlineUsers.indexOf(username));
+    if (controller.authenticate(token) && onlineUsers.indexOf(username) == -1) {
         return next();
     }
     return next(new Error('authentication error'));
@@ -57,7 +61,10 @@ io.on('connection', async function (socket)  {
     // Add the new user to the list of online users
     const username = await controller.getUsernameByToken(socket.handshake.query.token);
     console.log(username);
+    
+    
     onlineUsers.push(username);
+    
 
     // send the list of online users to the new user
     io.sockets.connected[socket.id].emit("onlineUsers", onlineUsers);
@@ -82,6 +89,7 @@ io.on('connection', async function (socket)  {
     socket.on('disconnect', async function () {
         console.log("hi");
         const disconnectedUsername = await controller.getUsernameByToken(socket.handshake.query.token);
+        console.log(disconnectedUsername);
         socket.broadcast.emit('userOffline', disconnectedUsername);
         onlineUsers.splice(onlineUsers.indexOf(disconnectedUsername), 1);
     });
