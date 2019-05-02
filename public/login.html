@@ -19,7 +19,7 @@
 		<h2>Already have an account?</h2>
 		<input id="Usernamelogin" type="text" placeholder="Username" />
 		<input id="Passwordlogin" type="password" placeholder="Password" />
-		<textarea disabled id="ErrorLogin" rows="4" cols="79"> </textarea>
+		<textarea disabled id="ErrorLogin" style="resize:none;" rows="1" cols="79"> </textarea>
 
 		<button id="sendlogin" onclick="Login();">Login</button>
 	</div>
@@ -28,7 +28,7 @@
 
 		<input id="Usernameregister" type="text" placeholder="Username" />
 		<input id="Passwordregister" type="password" placeholder="Password" />
-		<textarea disabled id="ErrorRegister" rows="4" cols="79"> </textarea>
+		<textarea disabled id="ErrorRegister" style="resize:none;" rows="1" cols="79"> </textarea>
 		<button id="sendlogin" onclick="Register();">Register</button>
 
 
@@ -40,9 +40,9 @@
 
 			xhttp.onreadystatechange = function () {
 				if (this.readyState == 4 && this.status == 400) {
-					document.getElementById("ErrorLogin").innerText = this.responseText;
+					document.getElementById("ErrorLogin").innerText = JSON.parse(this.responseText).error;
 				} else if (this.readyState == 4 && this.status == 200) {
-					window.location.replace("https://5c35caf4.ngrok.io/room");
+					window.location.replace("http://localhost:1234/room");
 				}
 			};
 
@@ -59,14 +59,17 @@
 			var xhttp = new XMLHttpRequest();
 
 			xhttp.onreadystatechange = function () {
-				if (this.readyState == 4 && this.status == 405)
-					document.getElementById("ErrorRegister").innerText = this.responseText;
+				if (this.readyState == 4 && this.status != 200){
+					document.getElementById("ErrorRegister").innerText = JSON.parse(this.responseText).error;
+				}else if (this.readyState == 4 && this.status ==200){
+					document.getElementById("ErrorRegister").innerText = "Successful registration";
+				}
 			};
 
 			xhttp.open("POST", "/register");
 
 
-
+			xhttp.setRequestHeader("Content-type", "application/JSON;charset=utf-8");
 			xhttp.send(JSON.stringify(
 				{
 					"userName": document.getElementById('Usernameregister').value,
