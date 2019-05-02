@@ -1,4 +1,5 @@
 const User = require('./db/User');
+const Chat = require('./db/Chat');
 const jwt = require('jsonwebtoken');
 
 async function signup(req, res) {
@@ -32,7 +33,7 @@ async function signup(req, res) {
 }
 
 async function login(req, res) {
-  
+
   let userName = req.body.userName;
   let password = req.body.password;
 
@@ -41,7 +42,7 @@ async function login(req, res) {
       error: "Missing data."
     });
   }
-  
+
   try {
     let user = await User.findOne({ userName });
     if (!user) {
@@ -66,8 +67,8 @@ async function login(req, res) {
     res.cookie('token', token);
 
     //res.sendFile(__dirname + '/public/index.html');
-    res.status( 200).send();
-    
+    res.status(200).send();
+
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -80,37 +81,49 @@ async function getUsernameByToken(token) {
   if (!token)
     return -1;
 
-    try {
+  try {
 
-      let payload = jwt.verify(token, "secret");
-      let id = payload.id;
-      let user = await User.findOne(id);
+    let payload = jwt.verify(token, "secret");
+    let id = payload.id;
+    let user = await User.findOne(id);
 
-      return user.userName;
+    return user.userName;
 
-    } catch (error) {
-      return -1;
-    }
+  } catch (error) {
+    return -1;
+  }
 }
 
 async function authenticate(token) {
   if (!token)
     return false;
 
-    try {
+  try {
 
-      let payload = jwt.verify(token, "secret");
-      let id = payload.id;
-      let user = await User.findOne(id);
+    let payload = jwt.verify(token, "secret");
+    let id = payload.id;
+    let user = await User.findOne(id);
 
-      if(user)
-        return true;
-      else
-        return false;
-
-    } catch (error) {
+    if (user)
+      return true;
+    else
       return false;
-    }
+
+  } catch (error) {
+    return false;
+  }
+}
+
+async function insertMessage(userName, message) {
+  let chat = new Chat();
+  chat.message = message;
+  chat.useeName = userName;
+  await chat.save();
+}
+
+async function loadMessages() {
+  let messages = await Chat.find({ order: { id: "ASC" } });
+  return messages;
 }
 
 function logout(req, res) {
@@ -120,5 +133,7 @@ module.exports = {
   signup,
   login,
   getUsernameByToken,
-  authenticate
+  authenticate,
+  insertMessage,
+  loadMessages
 }
