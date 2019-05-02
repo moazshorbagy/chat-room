@@ -1,5 +1,6 @@
 const typeorm = require("typeorm");
 const UserSchema = require('./UserSchema');
+const ChatSchema = require('./ChatSchema');
 
 module.exports = new Promise((resolve, reject) => {
   typeorm.createConnection({
@@ -7,10 +8,10 @@ module.exports = new Promise((resolve, reject) => {
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "da3m0ns",
+    password: "12345678",
     database: "chat",
     synchronize: true,
-    entities: [UserSchema]
+    entities: [UserSchema, ChatSchema]
   }).then(resolve).catch(reject);
 });
 

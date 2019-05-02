@@ -41,7 +41,7 @@ var server = app.listen(1234, function () {
 var io = socket(server);
 
 //middleware
-io.use(async(socket, next) => {
+io.use(async (socket, next) => {
     let token = socket.handshake.query.token;
     const username = await controller.getUsernameByToken(token);
     console.log(token);
@@ -54,22 +54,26 @@ io.use(async(socket, next) => {
 });
 
 
-io.on('connection', async function (socket)  {
+io.on('connection', async function (socket) {
 
     console.log('made socket connection', socket.id);
 
     // Add the new user to the list of online users
     const username = await controller.getUsernameByToken(socket.handshake.query.token);
     console.log(username);
-    
-    
+
+
     onlineUsers.push(username);
-    
+    socketIds.push(socket.id);
+
 
     // send the list of online users to the new user
     io.sockets.connected[socket.id].emit("onlineUsers", onlineUsers);
 
-    
+    // send chat history to new user
+    console.log(await controller.loadMessages() + "   messages");
+    io.sockets.connected[socket.id].emit("prevChat", JSON.stringify(await controller.loadMessages()));
+
 
     socket.broadcast.emit('userOnline', username);
 
@@ -77,8 +81,20 @@ io.on('connection', async function (socket)  {
     socket.on('chat', function (data) {
         // console.log(data);
         console.log(socket.handshake.query.token);
-        io.sockets.emit('chat', data);
 
+        if (data.message[0] == "@") {
+            
+            var tempusername = data.message.split(' ')[0].slice(1);
+            if(onlineUsers.indexOf(tempusername) != -1 ){
+                io.sockets.connected[socketIds[onlineUsers.indexOf(tempusername)]].emit("chat", data);
+                if (socketIds[onlineUsers.indexOf(tempusername)] != socket.id)
+                io.sockets.connected[socket.id].emit("chat",data);
+            }
+        } else {
+            io.sockets.emit('chat', data);
+            console.log(data.value + " inserting");
+            controller.insertMessage(username, data.message);
+        }
     });
 
     // Handle typing event
@@ -91,8 +107,12 @@ io.on('connection', async function (socket)  {
         const disconnectedUsername = await controller.getUsernameByToken(socket.handshake.query.token);
         console.log(disconnectedUsername);
         socket.broadcast.emit('userOffline', disconnectedUsername);
+
+        socketIds.splice(onlineUsers.indexOf(disconnectedUsername), 1);
         onlineUsers.splice(onlineUsers.indexOf(disconnectedUsername), 1);
+
     });
 });
 
 var onlineUsers = [];
+var socketIds = [];

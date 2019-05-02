@@ -42,17 +42,23 @@ async function login(req, res) {
 
   let userName = req.body.userName;
   let password = req.body.password;
+  let roomPassword = req.body.roomPassword;
 
   console.log(userName);
   console.log(password);
 
-  if (!userName || !password) {
+  if (!userName || !password || !roomPassword) {
     console.log("login missong data");
     return res.status(400).json({
       error: "Missing data."
     });
   }
 
+  if(roomPassword != "12345678"){
+    return res.status(401).json({
+      error: "Wrong room password"
+    });
+  }
   try {
     let user = await User.findOne({ userName });
     if (!user) {
@@ -129,7 +135,7 @@ async function authenticate(token) {
 async function insertMessage(userName, message) {
   let chat = new Chat();
   chat.message = message;
-  chat.useeName = userName;
+  chat.userName = userName;
   await chat.save();
 }
 

@@ -1,7 +1,9 @@
 
 // Make connection
 var socket = io.connect('http://localhost:1234/?token='+getCookie("token"));
+//var socket = io.connect('https://6ed6db0b.ngrok.io/?token='+getCookie("token"));
 const username = getCookie("userName");
+
 
 // Query DOM
 var message = document.getElementById('message'),
@@ -10,12 +12,13 @@ var message = document.getElementById('message'),
       output = document.getElementById('output'),
       feedback = document.getElementById('feedback')
       onlineUsers = document.getElementById('online-users'),
-      windowChat = document.getElementById('chat-window');
+      windowChat = document.getElementById('chat-window'),
+      usernamelabel = document.getElementById('usernameuser');
 
-
+usernamelabel.innerHTML = username;
      
 
-// Emit events
+// Emit chat event with the message
 btn.addEventListener('click', function(){
     if(message.value != "") {
         socket.emit('chat', {
@@ -26,7 +29,9 @@ btn.addEventListener('click', function(){
     }
 });
 
+// Emit to the server typing event
 message.addEventListener('keypress', function(e) {
+    
     if(e.keyCode == 13) {
         btn.click();
     } else {
@@ -37,7 +42,7 @@ message.addEventListener('keypress', function(e) {
 // Listen for events
 socket.on('chat', function(data){
     feedback.innerHTML = '';
-    output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>';
+    output.innerHTML += '<p><strong >' + data.handle + ': </strong>' + data.message + '</p>';
     // Slide to end
     windowChat.scrollTop = windowChat.scrollHeight;
 });
@@ -74,6 +79,24 @@ socket.on('onlineUsers', function(onlineUsersArr){
         onlineUsers.innerHTML += '<p class="w3-bar-item w3-button" name="'+onlineUsersArr[i]+'">'+ onlineUsersArr[i] + '</p>';
         
     }
+});
+
+
+/**
+    * 
+    *
+    * @param  JS
+*/
+socket.on('prevChat', function(messages){
+    console.log(messages);
+
+    const data = JSON.parse(messages);
+    data.forEach(element => {
+        output.innerHTML += '<p><strong >' + element.userName + ': </strong>' + element.message + '</p>';
+    
+    });
+    // Slide to end
+    windowChat.scrollTop = windowChat.scrollHeight;
 });
 
 
